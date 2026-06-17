@@ -1,0 +1,471 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--font-sans)}
+#aofk{width:100%;background:var(--color-background-primary);color:var(--color-text-primary)}
+.screen{width:100%;min-height:600px}
+
+/* INTRO */
+#s-intro{background:#1a0f00;min-height:640px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
+.game-title{font-size:30px;font-weight:500;color:#e8c97a;letter-spacing:0.08em;margin-bottom:6px;font-family:var(--font-serif)}
+.game-sub{font-size:13px;color:#9a7a4a;letter-spacing:0.18em;text-transform:uppercase;margin-bottom:28px}
+.intro-lore{max-width:380px;font-size:14px;color:#b0946a;line-height:1.75;margin-bottom:32px}
+.mode-cards{display:flex;flex-direction:column;gap:10px;width:100%;max-width:380px}
+.mcard{background:#2a1a08;border:1px solid #5a3a18;border-radius:10px;padding:14px 18px;cursor:pointer;text-align:left;transition:border-color 0.15s,background 0.15s;color:#e8c97a}
+.mcard:hover{background:#3a2410;border-color:#c8871a}
+.mcard-title{font-size:15px;font-weight:500;margin-bottom:3px}
+.mcard-desc{font-size:12px;color:#9a7a4a}
+.mcard-icon{font-size:22px;margin-bottom:6px}
+
+/* GAME HUD */
+#s-game{display:none;flex-direction:column;min-height:640px}
+.hud{background:#1a0f00;border-bottom:1px solid #5a3a18;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hud-title{font-size:13px;font-weight:500;color:#e8c97a;font-family:var(--font-serif);margin-right:4px}
+.res-chip{display:flex;align-items:center;gap:5px;background:#2a1a08;border:1px solid #5a3a18;border-radius:6px;padding:4px 10px;font-size:13px;color:#d4a84a}
+.res-chip i{font-size:14px;color:#9a7a4a}
+.turn-chip{margin-left:auto;background:#3a1a08;border:1px solid #8a4a18;border-radius:6px;padding:4px 12px;font-size:12px;color:#e8c97a}
+.sr-chip{background:#1a1a00;border:1px solid #8a8a18;border-radius:6px;padding:4px 12px;font-size:12px;color:#d4d44a}
+
+.game-body{display:grid;grid-template-columns:1fr 220px;flex:1}
+.map-wrap{background:#0d0800;position:relative;border-right:1px solid #3a2010;overflow:hidden}
+.map-grid{display:grid;grid-template-columns:repeat(10,1fr);height:100%;min-height:480px}
+.cell{position:relative;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;border:0.5px solid rgba(90,58,24,0.25);transition:background 0.12s;min-height:48px;user-select:none}
+.cell:hover{background:rgba(200,135,26,0.1)}
+.cell.sel{outline:2px solid #c8871a;outline-offset:-2px;z-index:2}
+.cell.reachable{background:rgba(30,120,60,0.22);outline:1px solid rgba(30,180,80,0.4);outline-offset:-1px}
+.cell.attackable{background:rgba(180,30,30,0.22);outline:1px solid rgba(220,80,80,0.4);outline-offset:-1px}
+.chp{position:absolute;bottom:2px;right:3px;font-size:9px;font-weight:500;color:#facc15;line-height:1}
+.ehp{position:absolute;bottom:2px;right:3px;font-size:9px;font-weight:500;color:#f87171;line-height:1}
+.cbadge{position:absolute;top:2px;left:3px;font-size:8px;color:#9a7a4a}
+
+.sidebar{background:#120a00;display:flex;flex-direction:column;gap:0}
+.sblock{padding:12px 14px;border-bottom:1px solid #2a1a08}
+.sblock-title{font-size:11px;font-weight:500;color:#7a5a2a;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px}
+.sbtn{display:block;width:100%;padding:7px 10px;margin-bottom:5px;font-size:12px;background:#1e1000;border:1px solid #4a2e10;border-radius:6px;color:#d4a84a;cursor:pointer;text-align:left;transition:background 0.1s,border-color 0.1s}
+.sbtn:last-child{margin-bottom:0}
+.sbtn:hover{background:#2e1a08;border-color:#8a5a1a}
+.sbtn:disabled{opacity:0.35;cursor:not-allowed}
+.sbtn.danger{border-color:#6a1a1a;color:#f08080}
+.sbtn.danger:hover{background:#2a0808}
+.sbtn.primary{border-color:#8a5a1a;background:#2a1800;color:#e8c97a}
+.sbtn.primary:hover{background:#3a2208}
+.sstat{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:var(--color-text-secondary)}
+.sstat span:last-child{color:#d4a84a}
+.log-box{flex:1;overflow-y:auto;padding:10px 14px;background:#0d0800;max-height:150px;min-height:100px}
+.log-line{font-size:11px;line-height:1.6;padding:1px 0;border-bottom:0.5px solid #1a1000;color:#7a6040}
+.log-line.g{color:#60a040}
+.log-line.b{color:#a04040}
+.log-line.n{color:#9a7a4a}
+
+/* MODAL OVERLAY — uses in-flow faux viewport */
+.modal-wrap{background:rgba(0,0,0,0.75);min-height:640px;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-box{background:#1a0f00;border:1px solid #8a5a1a;border-radius:12px;padding:28px 24px;max-width:340px;width:100%;text-align:center}
+.modal-box h2{font-size:22px;font-weight:500;color:#e8c97a;font-family:var(--font-serif);margin-bottom:10px}
+.modal-box p{font-size:13px;color:#9a7a4a;line-height:1.7;margin-bottom:20px}
+.modal-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.mbtn{padding:9px 22px;font-size:13px;border-radius:7px;border:1px solid #8a5a1a;background:#2a1800;color:#e8c97a;cursor:pointer;font-weight:500}
+.mbtn:hover{background:#3a2408}
+</style>
+
+<div id="aofk">
+<div id="s-intro" class="screen">
+  <div style="font-size:48px;margin-bottom:16px;opacity:0.9">&#9876;</div>
+  <div class="game-title">Ashes of the Forgotten Kingdom</div>
+  <div class="game-sub">A realm in ruins. A throne reclaimed.</div>
+  <p class="intro-lore">The ancient kingdom has fallen to shadow and silence. As its last heir, you must rise from the ashes — build fortifications, forge armies, and drive back the dark lords who have claimed your lands.</p>
+  <div class="mode-cards">
+    <div class="mcard" id="btn-casual">
+      <div class="mcard-icon"><i class="ti ti-sun" aria-hidden="true"></i></div>
+      <div class="mcard-title">Casual — Rebuild at your own pace</div>
+      <div class="mcard-desc">Generous resources. No time pressure. Focus on building your realm.</div>
+    </div>
+    <div class="mcard" id="btn-normal">
+      <div class="mcard-icon"><i class="ti ti-sword" aria-hidden="true"></i></div>
+      <div class="mcard-title">Normal — The true campaign</div>
+      <div class="mcard-desc">Balanced challenge. Enemies grow stronger each turn. Prove your worth.</div>
+    </div>
+    <div class="mcard" id="btn-speed">
+      <div class="mcard-icon"><i class="ti ti-bolt" aria-hidden="true"></i></div>
+      <div class="mcard-title">Speedrun — Race against the dark</div>
+      <div class="mcard-desc">8 minutes. All enemies must fall. Your best time is recorded.</div>
+    </div>
+  </div>
+</div>
+
+<div id="s-game" class="screen" style="flex-direction:column">
+  <div class="hud" id="hud"></div>
+  <div class="game-body">
+    <div class="map-wrap"><div class="map-grid" id="mgrid"></div></div>
+    <div class="sidebar" id="sidebar"></div>
+  </div>
+</div>
+
+<div id="s-modal" style="display:none"></div>
+</div>
+
+<script>
+const GW=10,GH=10;
+let G={},mode='normal',selCell=null,activeTroop=null,srSec=0,srBest=null,srTick=null,reach=[],atk=[];
+
+document.getElementById('btn-casual').onclick=()=>startGame('casual');
+document.getElementById('btn-normal').onclick=()=>startGame('normal');
+document.getElementById('btn-speed').onclick=()=>startGame('speed');
+
+const BLDG={
+  castle:{n:'Castle',e:'🏰',cost:0,prod:{gold:3,food:2}},
+  barracks:{n:'Barracks',e:'⚔️',cost:{gold:35},prod:{}},
+  farm:{n:'Farm',e:'🌾',cost:{gold:20},prod:{food:4}},
+  mine:{n:'Mine',e:'⛏️',cost:{gold:25},prod:{gold:5}},
+  tower:{n:'Tower',e:'🗼',cost:{gold:30},prod:{},defense:true},
+};
+const UNITS={
+  warrior:{n:'Warrior',e:'🛡️',cost:{gold:18,food:1},atk:5,hp:22,mov:2,rng:1},
+  archer:{n:'Archer',e:'🏹',cost:{gold:14,food:1},atk:4,hp:12,mov:1,rng:3},
+  siege:{n:'Catapult',e:'🗜️',cost:{gold:40,food:2},atk:12,hp:8,mov:1,rng:4},
+};
+
+let uid=0;
+function mkUnit(type,x,y,isE=false){
+  const u=UNITS[type];
+  return{...u,type,x,y,id:'u'+(++uid),hp:u.hp,mhp:u.hp,atk:isE?Math.max(2,u.atk-1):u.atk,mov:u.mov,rng:u.rng,moved:false,isE};
+}
+function cell(x,y){return G.cells[y*GW+x];}
+function addLog(m,t='n'){G.log.unshift({m,t});if(G.log.length>40)G.log.pop();}
+
+function startGame(m){
+  mode=m;srSec=0;if(srTick)clearInterval(srTick);
+  const bonus=m==='casual'?{gold:100,food:50}:{gold:55,food:22};
+  G={turn:1,gold:bonus.gold,food:bonus.food,units:[],eUnits:[],bldgs:[],enemies:[],cells:[],phase:'p',log:[]};
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+    let t='plain';
+    if((x+y)%7===0&&!(x<3&&y<3))t='forest';
+    if((x===4&&y===3)||(x===5&&y===4)||(x===3&&y===5)||(x===6&&y===6))t='mountain';
+    G.cells.push({x,y,t,b:null,uid:null,euid:null,owned:false});
+  }
+  cell(0,0).b='castle';cell(0,0).owned=true;cell(0,0).t='plain';
+  G.bldgs.push({type:'castle',x:0,y:0});
+  const start=mkUnit('warrior',1,0);G.units.push(start);cell(1,0).uid=start.id;cell(1,0).owned=true;
+  const e1=mkEnemy(8,1,1),e2=mkEnemy(7,8,2);G.enemies=[e1,e2];
+  if(m==='speed'){srTick=setInterval(()=>{srSec++;rHUD();if(srSec>=480){clearInterval(srTick);showModal('The Dark Prevails','Time ran out. The shadow consumed what remained of your kingdom.',false);}},1000);}
+  addLog('The kingdom stirs. Reclaim what was lost.','n');
+  document.getElementById('s-intro').style.display='none';
+  document.getElementById('s-game').style.display='flex';
+  selCell=null;activeTroop=null;reach=[];atk=[];
+  render();
+}
+
+function mkEnemy(x,y,lvl){
+  const e={x,y,lvl,hp:50+lvl*10,mhp:50+lvl*10,units:[]};
+  cell(x,y).b='ecastle';cell(x,y).t='plain';
+  return e;
+}
+
+function render(){rHUD();rMap();rSidebar();}
+
+function rHUD(){
+  const h=document.getElementById('hud');if(!h)return;
+  const sr=mode==='speed'?`<div class="sr-chip"><i class="ti ti-bolt" aria-hidden="true" style="font-size:13px"></i> ${fmtT(srSec)} / 8:00${srBest?' | best '+fmtT(srBest):''}</div>`:'';
+  h.innerHTML=`<span class="hud-title">Ashes</span>
+  <div class="res-chip"><i class="ti ti-coin" aria-hidden="true"></i>${G.gold}</div>
+  <div class="res-chip"><i class="ti ti-wheat" aria-hidden="true"></i>${G.food}</div>
+  <div class="res-chip"><i class="ti ti-sword" aria-hidden="true"></i>${G.units.length}</div>
+  ${sr}
+  <div class="turn-chip">${G.phase==='p'?'Your turn':'Enemy acts'} — Turn ${G.turn}</div>`;
+}
+
+function fmtT(s){return Math.floor(s/60)+':'+(s%60<10?'0':'')+s%60;}
+
+function rMap(){
+  const mg=document.getElementById('mgrid');if(!mg)return;
+  let html='';
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+    const c=cell(x,y);
+    let cls='cell',em='',hp='';
+    const isR=reach.some(r=>r[0]===x&&r[1]===y);
+    const isA=atk.some(a=>a[0]===x&&a[1]===y);
+    if(isR)cls+=' reachable';
+    if(isA)cls+=' attackable';
+    if(selCell&&selCell[0]===x&&selCell[1]===y)cls+=' sel';
+    if(c.t==='forest')em='🌲';
+    if(c.t==='mountain')em='⛰️';
+    if(c.b==='castle')em='🏰';
+    else if(c.b==='ecastle')em='💀';
+    else if(c.b==='barracks')em='⚔️';
+    else if(c.b==='farm')em='🌾';
+    else if(c.b==='mine')em='⛏️';
+    else if(c.b==='tower')em='🗼';
+    if(c.uid){const u=G.units.find(u=>u.id===c.uid);if(u){em=u.e+(u.moved?'💤':'');hp=`<span class="chp">${u.hp}</span>`;}}
+    if(c.euid){const eu=allEUnits().find(u=>u.id===c.euid);if(eu){em=eu.e;hp=`<span class="ehp">${eu.hp}</span>`;}}
+    html+=`<div class="${cls}" data-x="${x}" data-y="${y}">${em}${hp}</div>`;
+  }
+  mg.innerHTML=html;
+  mg.querySelectorAll('.cell').forEach(el=>{
+    el.addEventListener('click',()=>clickCell(+el.dataset.x,+el.dataset.y));
+  });
+}
+
+function allEUnits(){return G.enemies.flatMap(e=>e.units);}
+
+function rSidebar(){
+  const sb=document.getElementById('sidebar');if(!sb)return;
+  let info='';
+  if(selCell){
+    const [cx,cy]=selCell;const c=cell(cx,cy);
+    info+=`<div class="sblock"><div class="sblock-title">Selected (${cx},${cy})</div>`;
+    info+=`<div class="sstat"><span>Terrain</span><span>${c.t}</span></div>`;
+    if(c.b&&c.b!=='ecastle'){info+=`<div class="sstat"><span>Building</span><span>${BLDG[c.b]?.n||c.b}</span></div>`;}
+    if(c.uid){
+      const u=G.units.find(u=>u.id===c.uid);
+      if(u){
+        info+=`<div class="sstat"><span>${u.n}</span><span>${u.hp}/${u.mhp}hp</span></div>`;
+        info+=`<div class="sstat"><span>Atk / Range</span><span>${u.atk} / ${u.rng}</span></div>`;
+        if(!u.moved&&G.phase==='p')info+=`<button class="sbtn primary" id="sb-mv">Move / Attack</button>`;
+        else if(u.moved)info+=`<div style="font-size:11px;color:#7a5a2a;margin-top:4px">Unit already acted.</div>`;
+      }
+    }
+    if(c.euid){
+      const eu=allEUnits().find(u=>u.id===c.euid);
+      if(eu)info+=`<div class="sstat"><span>Enemy ${eu.n}</span><span>${eu.hp}hp atk${eu.atk}</span></div>`;
+    }
+    if(c.b==='ecastle'){
+      const en=G.enemies.find(e=>e.x===cx&&e.y===cy);
+      if(en)info+=`<div class="sstat"><span>Enemy Fortress</span><span>${en.hp}/${en.mhp}hp</span></div>`;
+    }
+    if(!c.b&&!c.uid&&!c.euid&&G.phase==='p'&&canBuildAt(cx,cy)){
+      info+=`<div class="sblock-title" style="margin-top:10px">Build here</div>`;
+      Object.entries(BLDG).forEach(([k,b])=>{
+        if(k==='castle')return;
+        const ok=!b.cost.gold||G.gold>=(b.cost.gold||0);
+        info+=`<button class="sbtn" ${ok?'':'disabled'} id="bld-${k}">${b.e} ${b.n} — ${b.cost.gold||0} gold</button>`;
+      });
+    }
+    if(c.b==='barracks'&&G.phase==='p'){
+      info+=`<div class="sblock-title" style="margin-top:10px">Train troops</div>`;
+      Object.entries(UNITS).forEach(([k,u])=>{
+        const ok=G.gold>=u.cost.gold&&G.food>=u.cost.food;
+        info+=`<button class="sbtn" ${ok?'':'disabled'} id="trn-${k}">${u.e} ${u.n} — ${u.cost.gold}g ${u.cost.food}f</button>`;
+      });
+    }
+    info+='</div>';
+  } else {
+    info='<div class="sblock"><div class="sblock-title">Map</div><div style="font-size:12px;color:#7a5a2a;line-height:1.6">Click any cell to inspect, build, or command your forces.</div></div>';
+  }
+  const enemies=G.enemies.map(e=>`<div class="sstat"><span>Fortress ${e.lvl}</span><span style="color:#f08080">${e.hp}/${e.mhp}hp</span></div>`).join('');
+  const logHtml=G.log.map(l=>`<div class="log-line ${l.t}">${l.m}</div>`).join('');
+  sb.innerHTML=info+
+  `<div class="sblock"><div class="sblock-title">Enemy fortresses</div>${enemies||'<div style="font-size:11px;color:#60a040">All enemies defeated!</div>'}</div>`+
+  `<div class="sblock"><button class="sbtn primary" id="sb-et">End turn <i class="ti ti-arrow-right" aria-hidden="true"></i></button></div>`+
+  `<div class="log-box">${logHtml}</div>`;
+
+  sb.querySelector('#sb-et')?.addEventListener('click',endTurn);
+  sb.querySelector('#sb-mv')?.addEventListener('click',()=>{
+    if(!selCell)return;
+    const c=cell(selCell[0],selCell[1]);
+    const u=G.units.find(u=>u.id===c.uid);
+    if(!u||u.moved)return;
+    activeTroop=u.id;
+    computeReach(u);
+    rMap();
+  });
+  Object.keys(BLDG).forEach(k=>{
+    sb.querySelector('#bld-'+k)?.addEventListener('click',()=>doBuild(k));
+  });
+  Object.keys(UNITS).forEach(k=>{
+    sb.querySelector('#trn-'+k)?.addEventListener('click',()=>doTrain(k));
+  });
+}
+
+function canBuildAt(x,y){
+  if(!G.phase==='p')return false;
+  const dirs=[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1]];
+  for(const[dx,dy]of dirs){
+    const nx=x+dx,ny=y+dy;
+    if(nx<0||ny<0||nx>=GW||ny>=GH)continue;
+    const c=cell(nx,ny);
+    if(c.owned||c.uid)return true;
+  }
+  return G.units.some(u=>Math.abs(u.x-x)<=1&&Math.abs(u.y-y)<=1)||G.bldgs.some(b=>Math.abs(b.x-x)<=1&&Math.abs(b.y-y)<=1&&cell(b.x,b.y).owned);
+}
+
+function computeReach(u){
+  reach=[];atk=[];
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+    const dist=Math.abs(u.x-x)+Math.abs(u.y-y);
+    const c=cell(x,y);
+    if(dist<=u.mov&&!c.uid&&!c.euid&&c.t!=='mountain'&&!(c.b&&c.b!=='ecastle'))reach.push([x,y]);
+    if(dist<=u.rng&&(c.euid||c.b==='ecastle'||G.enemies.some(e=>e.x===x&&e.y===y)))atk.push([x,y]);
+  }
+}
+
+function clickCell(x,y){
+  if(G.phase!=='p')return;
+  if(activeTroop){
+    tryAction(activeTroop,x,y);
+    activeTroop=null;reach=[];atk=[];
+    selCell=[x,y];render();return;
+  }
+  selCell=[x,y];reach=[];atk=[];render();
+}
+
+function tryAction(uid,tx,ty){
+  const u=G.units.find(u=>u.id===uid);if(!u||u.moved)return;
+  const tc=cell(tx,ty);
+  const dist=Math.abs(u.x-tx)+Math.abs(u.y-ty);
+  const en=G.enemies.find(e=>e.x===tx&&e.y===ty);
+  if(en&&dist<=u.rng){
+    const dmg=Math.max(1,u.atk+Math.floor(Math.random()*4)-1);
+    en.hp-=dmg;
+    addLog(`${u.n} hammers enemy fortress for ${dmg} dmg! (${Math.max(0,en.hp)}hp)`,'g');
+    u.moved=true;
+    if(en.hp<=0)destroyEnemy(en);
+    checkWin();return;
+  }
+  if(tc.euid&&dist<=u.rng){
+    const eu=allEUnits().find(u=>u.id===tc.euid);
+    if(eu){
+      const dmg=Math.max(1,u.atk+Math.floor(Math.random()*3));
+      eu.hp-=dmg;
+      addLog(`${u.n} strikes enemy ${eu.n} for ${dmg}! (${Math.max(0,eu.hp)}hp)`,'g');
+      u.moved=true;
+      if(eu.hp<=0)removeEUnit(eu,tx,ty);
+      checkWin();return;
+    }
+  }
+  if(dist<=u.mov&&!tc.uid&&!tc.euid&&tc.t!=='mountain'&&!(tc.b&&tc.b!=='ecastle')){
+    cell(u.x,u.y).uid=null;u.x=tx;u.y=ty;tc.uid=u.id;tc.owned=true;u.moved=true;
+    addLog(`${u.n} advances to (${tx},${ty})`,'n');
+  } else {addLog('Cannot move there.','b');}
+}
+
+function doBuild(type){
+  if(!selCell)return;
+  const[bx,by]=selCell;const b=BLDG[type];
+  if(G.gold<(b.cost.gold||0)){addLog('Not enough gold.','b');return;}
+  G.gold-=(b.cost.gold||0);
+  cell(bx,by).b=type;cell(bx,by).owned=true;
+  G.bldgs.push({type,x:bx,y:by});
+  addLog(`${b.n} erected at (${bx},${by})`,'g');render();
+}
+
+function doTrain(type){
+  if(!selCell)return;
+  const[bx,by]=selCell;const u=UNITS[type];
+  if(G.gold<u.cost.gold||G.food<u.cost.food){addLog('Insufficient resources.','b');return;}
+  G.gold-=u.cost.gold;G.food-=u.cost.food;
+  const dirs=[[0,1],[1,0],[0,-1],[-1,0],[1,1],[-1,1],[1,-1],[-1,-1]];
+  for(const[dx,dy]of dirs){
+    const nx=bx+dx,ny=by+dy;
+    if(nx<0||ny<0||nx>=GW||ny>=GH)continue;
+    const c=cell(nx,ny);
+    if(!c.uid&&!c.b&&!c.euid&&c.t!=='mountain'){
+      const nu=mkUnit(type,nx,ny);G.units.push(nu);c.uid=nu.id;c.owned=true;
+      addLog(`${u.n} joins your ranks at (${nx},${ny})`,'g');render();return;
+    }
+  }
+  addLog('No space near barracks.','b');render();
+}
+
+function destroyEnemy(en){
+  cell(en.x,en.y).b=null;en.units.forEach(u=>removeEUnit(u,u.x,u.y));
+  G.enemies=G.enemies.filter(e=>e!==en);
+  const loot=50+en.lvl*25;G.gold+=loot;
+  addLog(`Fortress ${en.lvl} falls! Looted ${loot} gold.`,'g');
+}
+
+function removeEUnit(eu,x,y){
+  cell(x,y).euid=null;
+  G.enemies.forEach(e=>{e.units=e.units.filter(u=>u.id!==eu.id);});
+}
+
+function endTurn(){
+  let g=0,f=0;
+  const multi=mode==='casual'?1.5:1;
+  G.bldgs.forEach(b=>{const p=BLDG[b.type]?.prod;if(p){g+=p.gold||0;f+=p.food||0;}});
+  g=Math.round(g*multi);f=Math.round(f*multi);
+  G.gold+=g;G.food+=f;
+  if(g||f)addLog(`+${g} gold, +${f} food gathered.`,'n');
+  G.units.forEach(u=>u.moved=false);
+  G.phase='e';render();
+  setTimeout(doEnemyTurn,700);
+}
+
+function doEnemyTurn(){
+  G.enemies.forEach(en=>{
+    if(G.turn%2===0&&en.units.length<4){
+      const types=['warrior','archer'];
+      const type=types[G.turn%2];
+      const dirs=[[0,1],[1,0],[0,-1],[-1,0]];
+      for(const[dx,dy]of dirs){
+        const nx=en.x+dx,ny=en.y+dy;
+        if(nx<0||ny<0||nx>=GW||ny>=GH)continue;
+        const c=cell(nx,ny);
+        if(!c.uid&&!c.euid&&!c.b&&c.t!=='mountain'){
+          const nu=mkUnit(type,nx,ny,true);
+          en.units.push(nu);c.euid=nu.id;
+          addLog(`Enemy summons a ${nu.n}!`,'b');break;
+        }
+      }
+    }
+    en.units.forEach(eu=>{
+      let tgt=null,minD=99;
+      G.units.forEach(pu=>{const d=Math.abs(eu.x-pu.x)+Math.abs(eu.y-pu.y);if(d<minD){minD=d;tgt=pu;}});
+      const cd=Math.abs(eu.x)+Math.abs(eu.y);
+      if(cd<minD){minD=cd;tgt={x:0,y:0,castle:true};}
+      if(!tgt)return;
+      if(minD<=eu.rng){
+        if(tgt.castle){G.gold=Math.max(0,G.gold-4);addLog(`Enemy ${eu.n} raids your castle! -4 gold`,'b');}
+        else{
+          const dmg=Math.max(1,eu.atk+Math.floor(Math.random()*3)-1);
+          tgt.hp-=dmg;
+          addLog(`Enemy ${eu.n} wounds your ${tgt.n} for ${dmg}!`,'b');
+          if(tgt.hp<=0){cell(tgt.x,tgt.y).uid=null;G.units=G.units.filter(u=>u.id!==tgt.id);addLog(`Your ${tgt.n} has fallen.`,'b');}
+        }
+      } else {
+        const dx=tgt.x-eu.x,dy=tgt.y-eu.y;
+        let nx=eu.x,ny=eu.y;
+        if(Math.abs(dx)>=Math.abs(dy))nx+=Math.sign(dx);else ny+=Math.sign(dy);
+        if(nx>=0&&nx<GW&&ny>=0&&ny<GH){
+          const nc=cell(nx,ny);
+          if(!nc.uid&&!nc.euid&&nc.t!=='mountain'&&!nc.b){
+            cell(eu.x,eu.y).euid=null;eu.x=nx;eu.y=ny;nc.euid=eu.id;
+          }
+        }
+      }
+    });
+  });
+  G.turn++;G.phase='p';
+  if(G.units.length===0&&!G.bldgs.find(b=>b.type==='barracks')){
+    showModal('The Kingdom Falls','Your last warriors have perished. The forgotten kingdom fades to dust once more.',false);return;
+  }
+  render();
+}
+
+function checkWin(){
+  if(G.enemies.length===0){
+    if(mode==='speed'){
+      clearInterval(srTick);
+      if(!srBest||srSec<srBest)srBest=srSec;
+      showModal('Victory in the Ashes','You reclaimed the realm in '+fmtT(srSec)+'!'+(srBest===srSec?' A new record!':''),true);
+    } else {
+      showModal('The Kingdom Rises','All enemy fortresses lie in ruin. The forgotten kingdom breathes again.',true);
+    }
+  }
+}
+
+function showModal(title,msg,canRestart){
+  const m=document.getElementById('s-modal');
+  m.style.display='block';
+  m.innerHTML=`<div class="modal-wrap"><div class="modal-box">
+  <h2>${title}</h2><p>${msg}</p>
+  <div class="modal-btns">
+  ${canRestart?'<button class="mbtn" id="mb-restart">Play again</button>':''}
+  <button class="mbtn" id="mb-menu">Main menu</button>
+  </div></div></div>`;
+  m.querySelector('#mb-restart')?.addEventListener('click',()=>{m.style.display='none';startGame(mode);});
+  m.querySelector('#mb-menu')?.addEventListener('click',()=>{
+    m.style.display='none';
+    document.getElementById('s-game').style.display='none';
+    document.getElementById('s-intro').style.display='flex';
+    if(srTick)clearInterval(srTick);
+  });
+}
+</script>
