@@ -1,0 +1,603 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--font-sans)}
+#root{width:100%;background:#0a0600;color:#d4a84a;min-height:680px}
+input,button{font-family:inherit}
+
+/* ── SHARED ── */
+.screen{width:100%;min-height:680px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px}
+.card{background:#120900;border:1px solid #4a2e10;border-radius:10px;padding:24px 22px;width:100%;max-width:380px}
+.card-title{font-size:18px;font-weight:500;color:#e8c97a;font-family:var(--font-serif);margin-bottom:4px;text-align:center}
+.card-sub{font-size:11px;color:#5a3a18;text-align:center;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:18px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;color:#7a5a2a;margin-bottom:4px;letter-spacing:0.05em}
+.field input{width:100%;padding:8px 10px;background:#1a0f00;border:1px solid #3a2010;border-radius:5px;color:#e8c97a;font-size:13px;outline:none}
+.field input:focus{border-color:#8a5a1a}
+.gbtn{display:block;width:100%;padding:9px 12px;font-size:13px;font-weight:500;border:1px solid #7a4a18;border-radius:6px;background:#1e1000;color:#e8c97a;cursor:pointer;text-align:center;margin-bottom:8px;transition:background 0.1s}
+.gbtn:hover{background:#2e1800}
+.gbtn.ghost{background:transparent;border-color:#3a2010;color:#7a5a2a;font-weight:400}
+.gbtn.ghost:hover{background:#1a0f00;color:#d4a84a}
+.err{color:#c05050;font-size:11px;margin-top:8px;text-align:center;min-height:16px}
+.logo{font-size:36px;margin-bottom:10px;text-align:center}
+.divider{border:none;border-top:1px solid #2a1808;margin:14px 0}
+
+/* ── MODE SELECT ── */
+.mcard{background:#1a0f00;border:1px solid #3a2010;border-radius:8px;padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:all 0.12s}
+.mcard:hover{background:#241508;border-color:#c8871a}
+.mcard-icon{font-size:22px;flex-shrink:0;width:30px;text-align:center}
+.mcard-title{font-size:13px;font-weight:500;color:#e8c97a}
+.mcard-desc{font-size:11px;color:#6a4a1a;margin-top:1px}
+
+/* ── TUTORIAL ── */
+.tut-wrap{width:100%;max-width:480px}
+.tut-steps{display:flex;gap:6px;justify-content:center;margin-bottom:20px}
+.tstep{width:28px;height:4px;border-radius:2px;background:#2a1808;transition:background 0.2s}
+.tstep.done{background:#c8871a}
+.tstep.active{background:#e8c97a}
+.tut-card{background:#120900;border:1px solid #4a2e10;border-radius:10px;padding:22px;min-height:320px;display:flex;flex-direction:column}
+.tut-icon{font-size:40px;text-align:center;margin-bottom:10px}
+.tut-title{font-size:17px;font-weight:500;color:#e8c97a;text-align:center;margin-bottom:8px;font-family:var(--font-serif)}
+.tut-body{font-size:12px;color:#9a7040;line-height:1.85;flex:1}
+.tut-body strong{color:#d4a84a;font-weight:500}
+.tut-demo{background:#0a0600;border:1px solid #2a1808;border-radius:6px;padding:12px;margin:12px 0;font-size:11px;color:#7a5a2a}
+.tut-demo .demo-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;line-height:1.5}
+.tut-demo .demo-row:last-child{margin-bottom:0}
+.tut-nav{display:flex;gap:8px;margin-top:14px}
+.tut-nav button{flex:1;padding:8px;font-size:12px;border-radius:6px;border:1px solid #5a3a18;background:#1a0f00;color:#c4904a;cursor:pointer}
+.tut-nav button:hover{background:#241508;border-color:#8a5a18;color:#e8c97a}
+.tut-nav button.next{border-color:#8a5a18;background:#201000;color:#e8c97a;font-weight:500}
+
+/* ── SAVE SLOTS ── */
+.slot{background:#1a0f00;border:1px solid #3a2010;border-radius:8px;padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all 0.12s}
+.slot:hover{background:#221400;border-color:#7a4a18}
+.slot-icon{font-size:20px;flex-shrink:0}
+.slot-info{flex:1}
+.slot-name{font-size:13px;color:#e8c97a;font-weight:500}
+.slot-meta{font-size:11px;color:#5a3a18;margin-top:2px}
+.slot-empty{font-size:12px;color:#4a2e10;font-style:italic}
+.slot-del{padding:4px 8px;font-size:11px;border:1px solid #4a1a1a;border-radius:4px;background:transparent;color:#804040;cursor:pointer}
+.slot-del:hover{background:#2a0808;color:#f08080}
+
+/* ── HUD ── */
+.hud{background:#0d0800;border-bottom:1px solid #2a1808;padding:8px 10px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;width:100%}
+.hud-brand{font-size:12px;color:#6a4a20;font-family:var(--font-serif)}
+.hstat{display:flex;align-items:center;gap:4px;background:#1a0f00;border:1px solid #2a1808;border-radius:5px;padding:3px 9px;font-size:13px;font-weight:500;color:#e8c97a}
+.hstat i{font-size:12px;color:#6a4a20}
+.hstat .lbl{font-size:9px;color:#5a3a18;margin-left:2px}
+.turn-pill{margin-left:auto;background:#160800;border:1px solid #4a2e10;border-radius:5px;padding:3px 10px;font-size:11px;color:#c4904a}
+.sr-pill{background:#141400;border:1px solid #5a5a10;border-radius:5px;padding:3px 10px;font-size:11px;color:#b8b830}
+
+/* GUIDE */
+.guide{background:#100800;border-bottom:1px solid #1e1000;padding:7px 12px;display:flex;align-items:center;gap:8px;width:100%;min-height:36px}
+.guide-badge{display:inline-flex;align-items:center;gap:5px;background:#1e1000;border:1px solid #5a3a10;border-radius:5px;padding:3px 10px;font-size:11px;color:#e8c97a;white-space:nowrap}
+.guide-badge i{font-size:13px;color:#c8871a}
+.guide-hint{font-size:10px;color:#5a3518;flex:1}
+
+/* MAP */
+.game-body{display:grid;grid-template-columns:1fr 196px;width:100%}
+.map-col{background:#080500;position:relative;border-right:1px solid #1e1000}
+.map-grid{display:grid;grid-template-columns:repeat(10,1fr);min-height:460px}
+.cell{position:relative;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;border:0.5px solid rgba(50,28,8,0.35);min-height:46px;transition:background 0.08s}
+.cell:hover{background:rgba(200,135,26,0.1)}
+.cell.sel{outline:2px solid #c8871a;outline-offset:-2px;z-index:2}
+.cell.reach{background:rgba(30,130,60,0.22)}
+.cell.reach::after{content:'';position:absolute;inset:0;border:1px solid rgba(50,200,90,0.3)}
+.cell.atkr{background:rgba(160,30,30,0.22)}
+.cell.atkr::after{content:'';position:absolute;inset:0;border:1px solid rgba(210,70,70,0.35)}
+.chp{position:absolute;bottom:2px;right:2px;font-size:9px;color:#facc15;font-weight:600;line-height:1}
+.ehp{position:absolute;bottom:2px;right:2px;font-size:9px;color:#f87171;font-weight:600;line-height:1}
+
+/* MINIMAP */
+.minimap{position:absolute;bottom:8px;right:8px;background:#080500;border:1px solid #3a2010;border-radius:5px;padding:4px;z-index:5}
+.mm-lbl{font-size:8px;color:#4a2a0a;text-align:center;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px}
+.mm-grid{display:grid;grid-template-columns:repeat(10,8px);gap:1px}
+.mm-c{width:8px;height:8px;border-radius:1px;background:#120900}
+.mm-castle{background:#c8871a}.mm-ec{background:#c83a1a}.mm-u{background:#50a030}.mm-eu{background:#c04040}.mm-b{background:#7a5818}.mm-f{background:#1a3008}.mm-m{background:#2e2820}.mm-own{background:#142008}
+
+/* SIDEBAR */
+.sb{background:#0d0800;display:flex;flex-direction:column;overflow:hidden}
+.sblk{padding:9px 11px;border-bottom:1px solid #160c00}
+.sblk-title{font-size:9px;font-weight:500;color:#4a2e10;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px}
+.sbtn{display:block;width:100%;padding:5px 8px;margin-bottom:4px;font-size:11px;background:#160c00;border:1px solid #2e1a08;border-radius:4px;color:#b47830;cursor:pointer;text-align:left;transition:all 0.1s}
+.sbtn:last-child{margin-bottom:0}
+.sbtn:hover:not(:disabled){background:#1e1000;border-color:#7a4a18;color:#e8c97a}
+.sbtn:disabled{opacity:0.28;cursor:not-allowed}
+.sbtn.primary{border-color:#6a4018;background:#180e00;color:#e8c97a}
+.sbtn.primary:hover:not(:disabled){background:#241400}
+.srow{display:flex;justify-content:space-between;font-size:10px;padding:2px 0}
+.srow .k{color:#4a2e10}.srow .v{color:#c4904a}.sv-r{color:#c05050!important}
+.log-a{overflow-y:auto;padding:7px 9px;min-height:60px;max-height:110px;background:#060400}
+.ll{font-size:10px;line-height:1.55;padding:1px 0;border-bottom:0.5px solid #0e0800}
+.ll.g{color:#508030}.ll.b{color:#904040}.ll.n{color:#6a4a20}.ll.h{color:#c8871a;font-weight:500}
+
+/* MODAL */
+.modal-bg{background:rgba(0,0,0,0.82);min-height:680px;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-box{background:#120900;border:1px solid #7a4a18;border-radius:10px;padding:24px 20px;max-width:300px;width:100%;text-align:center}
+.modal-box h2{font-size:18px;font-weight:500;color:#e8c97a;font-family:var(--font-serif);margin-bottom:8px}
+.modal-box p{font-size:11px;color:#8a6030;line-height:1.7;margin-bottom:16px}
+.modal-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.mbtn{padding:7px 18px;font-size:12px;border-radius:5px;border:1px solid #7a4a18;background:#1e1000;color:#e8c97a;cursor:pointer}
+.mbtn:hover{background:#2a1400}
+</style>
+
+<div id="root"></div>
+
+<script>
+const R=document.getElementById('root');
+let APP={page:'login',user:null,users:{},saves:{},mode:null,tutStep:0};
+let G={},selC=null,actT=null,reach=[],atkr=[],srSec=0,srBest=null,srTick=null;
+
+function loadStorage(){
+  try{
+    const u=localStorage.getItem('aofk_users');
+    const s=localStorage.getItem('aofk_saves');
+    if(u)APP.users=JSON.parse(u);
+    if(s)APP.saves=JSON.parse(s);
+  }catch(e){APP.users={};APP.saves={};}
+}
+function saveStorage(){
+  try{localStorage.setItem('aofk_users',JSON.stringify(APP.users));localStorage.setItem('aofk_saves',JSON.stringify(APP.saves));}catch(e){}
+}
+loadStorage();
+
+/* ── PAGES ── */
+function render(){
+  if(APP.page==='login')renderLogin();
+  else if(APP.page==='register')renderRegister();
+  else if(APP.page==='saves')renderSaves();
+  else if(APP.page==='mode')renderMode();
+  else if(APP.page==='tutorial')renderTutorial();
+  else if(APP.page==='game')renderGame();
+  else if(APP.page==='modal')renderModal();
+}
+
+/* LOGIN */
+function renderLogin(){
+  R.innerHTML=`<div class="screen"><div class="logo">&#9876;</div>
+  <div class="card">
+  <div class="card-title">Ashes of the Forgotten Kingdom</div>
+  <div class="card-sub">Sign in to continue your campaign</div>
+  <div class="field"><label>Username</label><input id="un" placeholder="Enter username" autocomplete="off"></div>
+  <div class="field"><label>Password</label><input id="pw" type="password" placeholder="Enter password"></div>
+  <div class="err" id="lerr"></div>
+  <button class="gbtn" id="lb" style="margin-top:8px">Enter the Kingdom</button>
+  <hr class="divider">
+  <button class="gbtn ghost" id="reg">New heir? Create account</button>
+  </div></div>`;
+  R.querySelector('#lb').addEventListener('click',doLogin);
+  R.querySelector('#reg').addEventListener('click',()=>{APP.page='register';render();});
+  R.querySelector('#pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+}
+function doLogin(){
+  const un=R.querySelector('#un').value.trim(),pw=R.querySelector('#pw').value;
+  if(!un||!pw){R.querySelector('#lerr').textContent='Please fill in both fields.';return;}
+  if(!APP.users[un]){R.querySelector('#lerr').textContent='No account found. Create one first.';return;}
+  if(APP.users[un].pw!==pw){R.querySelector('#lerr').textContent='Incorrect password.';return;}
+  APP.user=un;APP.page='saves';render();
+}
+
+/* REGISTER */
+function renderRegister(){
+  R.innerHTML=`<div class="screen"><div class="logo">&#9876;</div>
+  <div class="card">
+  <div class="card-title">Create Your Account</div>
+  <div class="card-sub">Forge your legacy</div>
+  <div class="field"><label>Choose a username</label><input id="un" placeholder="Your name, heir" autocomplete="off"></div>
+  <div class="field"><label>Choose a password</label><input id="pw" type="password" placeholder="Password"></div>
+  <div class="field"><label>Confirm password</label><input id="pw2" type="password" placeholder="Confirm"></div>
+  <div class="err" id="rerr"></div>
+  <button class="gbtn" id="rb" style="margin-top:8px">Claim Your Name</button>
+  <hr class="divider">
+  <button class="gbtn ghost" id="back">Back to login</button>
+  </div></div>`;
+  R.querySelector('#rb').addEventListener('click',doRegister);
+  R.querySelector('#back').addEventListener('click',()=>{APP.page='login';render();});
+}
+function doRegister(){
+  const un=R.querySelector('#un').value.trim(),pw=R.querySelector('#pw').value,pw2=R.querySelector('#pw2').value;
+  if(!un||!pw){R.querySelector('#rerr').textContent='Fill in all fields.';return;}
+  if(pw!==pw2){R.querySelector('#rerr').textContent='Passwords do not match.';return;}
+  if(un.length<3){R.querySelector('#rerr').textContent='Username must be 3+ characters.';return;}
+  if(APP.users[un]){R.querySelector('#rerr').textContent='Username already taken.';return;}
+  APP.users[un]={pw};saveStorage();
+  APP.user=un;APP.page='saves';render();
+}
+
+/* SAVE SLOTS */
+function renderSaves(){
+  const userSaves=APP.saves[APP.user]||[null,null,null];
+  APP.saves[APP.user]=userSaves;
+  let slotsHtml='';
+  userSaves.forEach((s,i)=>{
+    if(s){
+      slotsHtml+=`<div class="slot" id="slot-${i}">
+      <div class="slot-icon">&#9876;</div>
+      <div class="slot-info"><div class="slot-name">${s.mode==='casual'?'☀️':s.mode==='speed'?'⚡':'⚔️'} ${s.modeName} — Turn ${s.turn}</div>
+      <div class="slot-meta">Gold: ${s.gold} · Soldiers: ${s.soldiers} · Saved: ${s.date}</div></div>
+      <button class="slot-del" data-i="${i}">Delete</button>
+      </div>`;
+    } else {
+      slotsHtml+=`<div class="slot slot-empty-slot" id="slot-${i}">
+      <div class="slot-icon" style="color:#2a1808;font-size:18px">+</div>
+      <div class="slot-info"><div class="slot-empty">Empty save slot ${i+1}</div><div class="slot-meta">Start a new campaign here</div></div>
+      </div>`;
+    }
+  });
+  R.innerHTML=`<div class="screen"><div class="card" style="max-width:440px">
+  <div class="card-title">&#9876; ${APP.user}'s Campaigns</div>
+  <div class="card-sub">Choose a save slot</div>
+  ${slotsHtml}
+  <hr class="divider">
+  <button class="gbtn ghost" id="logout">Sign out</button>
+  </div></div>`;
+  userSaves.forEach((_,i)=>{
+    R.querySelector(`#slot-${i}`)?.addEventListener('click',e=>{
+      if(e.target.classList.contains('slot-del'))return;
+      APP.currentSlot=i;
+      if(userSaves[i]){loadSaveSlot(i);}
+      else{APP.page='mode';render();}
+    });
+  });
+  R.querySelectorAll('.slot-del').forEach(btn=>{
+    btn.addEventListener('click',e=>{e.stopPropagation();const i=+btn.dataset.i;APP.saves[APP.user][i]=null;saveStorage();renderSaves();});
+  });
+  R.querySelector('#logout').addEventListener('click',()=>{APP.user=null;APP.page='login';render();});
+}
+
+function loadSaveSlot(i){
+  const s=APP.saves[APP.user][i];
+  G=s.G;APP.mode=s.mode;srSec=s.srSec||0;srBest=s.srBest||null;
+  selC=null;actT=null;reach=[];atkr=[];
+  if(APP.mode==='speed'&&G.phase==='p'){srTick=setInterval(()=>{srSec++;rHUD();if(srSec>=480){clearInterval(srTick);showModal('The Dark Prevails','Time ran out.',false);}},1000);}
+  APP.page='game';render();
+}
+
+function doSave(){
+  if(APP.user===null||APP.currentSlot===undefined)return;
+  if(!APP.saves[APP.user])APP.saves[APP.user]=[null,null,null];
+  const mn={casual:'Casual',normal:'Normal',speed:'Speedrun'};
+  APP.saves[APP.user][APP.currentSlot]={
+    mode:APP.mode,modeName:mn[APP.mode]||APP.mode,turn:G.turn,gold:G.gold,soldiers:G.units.length,
+    date:new Date().toLocaleDateString(),G:JSON.parse(JSON.stringify(G)),srSec,srBest
+  };
+  saveStorage();
+  addLog('Game saved.','h');
+}
+
+/* MODE SELECT */
+function renderMode(){
+  R.innerHTML=`<div class="screen"><div class="card">
+  <div class="card-title">Choose Your Path</div>
+  <div class="card-sub">Select a game mode</div>
+  <div class="mcard" id="mc-casual"><div class="mcard-icon"><i class="ti ti-sun" aria-hidden="true"></i></div><div><div class="mcard-title">Casual — Rebuild freely</div><div class="mcard-desc">More resources, relaxed pace. No time limit.</div></div></div>
+  <div class="mcard" id="mc-normal"><div class="mcard-icon"><i class="ti ti-sword" aria-hidden="true"></i></div><div><div class="mcard-title">Normal — True campaign</div><div class="mcard-desc">Balanced. Enemies grow stronger each turn.</div></div></div>
+  <div class="mcard" id="mc-speed"><div class="mcard-icon"><i class="ti ti-bolt" aria-hidden="true"></i></div><div><div class="mcard-title">Speedrun — Race the dark</div><div class="mcard-desc">8 minutes to destroy all enemies. Record your best.</div></div></div>
+  <hr class="divider">
+  <button class="gbtn ghost" id="back">Back</button>
+  </div></div>`;
+  ['casual','normal','speed'].forEach(m=>{
+    R.querySelector(`#mc-${m}`).addEventListener('click',()=>{APP.mode=m;APP.tutStep=0;APP.page='tutorial';render();});
+  });
+  R.querySelector('#back').addEventListener('click',()=>{APP.page='saves';render();});
+}
+
+/* TUTORIAL */
+const TUT_STEPS=[
+  {icon:'🏰',title:'Welcome, Heir',body:`You are the last heir of the Forgotten Kingdom. Your goal: <strong>destroy all enemy fortresses</strong> (💀) to reclaim the realm.\n\nThe map is a 10×10 grid. Your castle 🏰 sits in the top-left corner. Two enemy fortresses lurk in the distance.`,demo:[
+    {icon:'🏰',text:'Your castle — produces 3 gold + 2 food per turn'},
+    {icon:'💀',text:'Enemy fortress — destroy both to win'},
+    {icon:'⛰️🌲',text:'Mountains block movement. Forests are passable.'},
+  ]},
+  {icon:'⛏️',title:'Step 1 — Gather Resources',body:`Every turn you automatically collect <strong>gold</strong> and <strong>food</strong> from your buildings. You start with a castle.\n\nBuild a <strong>Farm 🌾</strong> for more food and a <strong>Mine ⛏️</strong> for more gold. Click an empty cell near your troops, then choose from the sidebar.`,demo:[
+    {icon:'🌾',text:'Farm — costs 20 gold, gives +4 food per turn'},
+    {icon:'⛏️',text:'Mine — costs 25 gold, gives +5 gold per turn'},
+    {icon:'💡',text:'Build near your troops — only adjacent cells are valid'},
+  ]},
+  {icon:'⚔️',title:'Step 2 — Build a Barracks',body:`<strong>A Barracks is the most important building.</strong> Without one you cannot train soldiers.\n\n① Click an empty cell near your castle or troops\n② In the sidebar, click "Barracks — 35g"\n③ Your barracks ⚔️ will appear on the map`,demo:[
+    {icon:'1️⃣',text:'Click empty land next to your castle or soldiers'},
+    {icon:'2️⃣',text:'Sidebar shows "Build here" — click Barracks (35 gold)'},
+    {icon:'3️⃣',text:'Barracks ⚔️ appears. Now you can train troops!'},
+  ]},
+  {icon:'🛡️',title:'Step 3 — Train Soldiers',body:`Once you have a Barracks, click it on the map. The sidebar shows three troop types:\n\n<strong>🛡️ Warrior</strong> — tough melee fighter, moves 2 cells\n<strong>🏹 Archer</strong> — long range (3 cells), stays back\n<strong>🗜️ Catapult</strong> — massive damage to fortresses`,demo:[
+    {icon:'🛡️',text:'Warrior — 18g 1f · 22hp · Atk 5 · Range 1'},
+    {icon:'🏹',text:'Archer — 14g 1f · 12hp · Atk 4 · Range 3'},
+    {icon:'🗜️',text:'Catapult — 40g 2f · 8hp · Atk 12 · Range 4'},
+  ]},
+  {icon:'⚔️',title:'Step 4 — Move & Attack',body:`Each turn, your soldiers can <strong>move once</strong> and/or <strong>attack once</strong>.\n\n① Click a soldier on the map to select it\n② Click "Move / Attack" in the sidebar\n③ <strong style="color:#60a040">Green cells</strong> = you can move there\n④ <strong style="color:#c05050">Red cells</strong> = you can attack there\n⑤ Click your target`,demo:[
+    {icon:'🟢',text:'Green cell = move your soldier there'},
+    {icon:'🔴',text:'Red cell = attack enemy in that cell'},
+    {icon:'💡',text:'Archers and catapults can attack without moving close'},
+  ]},
+  {icon:'🗺️',title:'Step 5 — The Interface',body:`Here is everything on screen during the game:\n\n<strong>Top bar</strong> — gold, food, soldier count\n<strong>Guide strip</strong> — always tells you what to do next\n<strong>Minimap</strong> — bottom-right corner of the map\n<strong>Sidebar</strong> — actions for the selected cell\n<strong>Battle log</strong> — bottom of sidebar`,demo:[
+    {icon:'🗺️',text:'Minimap: orange=your castle, red=enemy, green=your troops'},
+    {icon:'📜',text:'Guide bar: follow it every turn — it updates automatically'},
+    {icon:'💾',text:'Use "Save Game" in the sidebar anytime to save progress'},
+  ]},
+];
+
+function renderTutorial(){
+  const s=APP.tutStep;const step=TUT_STEPS[s];
+  const stepsHtml=TUT_STEPS.map((_,i)=>`<div class="tstep ${i<s?'done':i===s?'active':''}"></div>`).join('');
+  const demoHtml=step.demo.map(d=>`<div class="demo-row"><span style="font-size:16px;flex-shrink:0">${d.icon}</span><span>${d.text}</span></div>`).join('');
+  const bodyHtml=step.body.replace(/\n/g,'<br>');
+  const mn={casual:'☀️ Casual',normal:'⚔️ Normal',speed:'⚡ Speedrun'};
+  R.innerHTML=`<div class="screen" style="background:#0a0600">
+  <div class="tut-wrap">
+  <div style="text-align:center;margin-bottom:14px;font-size:11px;color:#4a2e10">
+  ${mn[APP.mode]||''} — Tutorial (${s+1}/${TUT_STEPS.length})
+  </div>
+  <div class="tut-steps">${stepsHtml}</div>
+  <div class="tut-card">
+  <div class="tut-icon">${step.icon}</div>
+  <div class="tut-title">${step.title}</div>
+  <div class="tut-body" style="margin-top:8px">${bodyHtml}</div>
+  <div class="tut-demo">${demoHtml}</div>
+  <div class="tut-nav">
+  ${s>0?'<button id="tut-back">← Back</button>':'<button style="opacity:0.2;cursor:default" disabled>← Back</button>'}
+  ${s<TUT_STEPS.length-1?'<button class="next" id="tut-next">Next →</button>':'<button class="next" id="tut-play">Start playing →</button>'}
+  </div>
+  </div>
+  </div></div>`;
+  R.querySelector('#tut-back')?.addEventListener('click',()=>{APP.tutStep--;render();});
+  R.querySelector('#tut-next')?.addEventListener('click',()=>{APP.tutStep++;render();});
+  R.querySelector('#tut-play')?.addEventListener('click',()=>{startGame(APP.mode);});
+}
+
+/* ── GAME ── */
+const BLDG={castle:{n:'Castle',e:'🏰',cost:0,prod:{gold:3,food:2}},barracks:{n:'Barracks',e:'⚔️',cost:{gold:35},prod:{}},farm:{n:'Farm',e:'🌾',cost:{gold:20},prod:{food:4}},mine:{n:'Mine',e:'⛏️',cost:{gold:25},prod:{gold:5}},tower:{n:'Tower',e:'🗼',cost:{gold:30},prod:{}}};
+const UNITS={warrior:{n:'Warrior',e:'🛡️',cost:{gold:18,food:1},atk:5,hp:22,mov:2,rng:1},archer:{n:'Archer',e:'🏹',cost:{gold:14,food:1},atk:4,hp:12,mov:1,rng:3},catapult:{n:'Catapult',e:'🗜️',cost:{gold:40,food:2},atk:12,hp:8,mov:1,rng:4}};
+let UID=0;
+function mkU(type,x,y,isE=false){const u={...UNITS[type]};return{...u,type,x,y,id:'u'+(++UID),hp:u.hp,mhp:u.hp,atk:isE?Math.max(2,u.atk-1):u.atk,moved:false,isE};}
+function C(x,y){return G.cells[y*10+x];}
+function addLog(m,t='n'){G.log.unshift({m,t});if(G.log.length>50)G.log.pop();}
+
+function getGuide(){
+  if(G.phase==='e')return{icon:'ti-hourglass',t:'Enemy is moving — watch the battlefield.',h:''};
+  if(actT){const u=G.units.find(u=>u.id===actT);return{icon:'ti-crosshair',t:`${u?u.n:''} selected. Green = move · Red = attack.`,h:'Click cancel to deselect.'};}
+  if(!G.bldgs.find(b=>b.type==='barracks')&&G.gold>=35)return{icon:'ti-alert-triangle',t:'Build a Barracks ⚔️ first — you need it to train soldiers!',h:'Click empty land near your castle → Barracks in sidebar.'};
+  if(!G.bldgs.find(b=>b.type==='barracks')&&G.gold<35)return{icon:'ti-coin',t:'Collect gold! End your turn to gather resources from buildings.',h:'Build a Mine ⛏️ when you have 25 gold.'};
+  if(G.units.length<3&&G.bldgs.find(b=>b.type==='barracks')&&G.gold>=14)return{icon:'ti-sword',t:'Train more soldiers! Click your Barracks ⚔️ on the map.',h:'Archers and catapults hit from far away.'};
+  if(G.units.some(u=>!u.moved))return{icon:'ti-arrow-move-right',t:'Click a soldier on the map → Move / Attack in sidebar.',h:'Push toward the enemy fortress 💀!'};
+  return{icon:'ti-player-skip-forward',t:'All soldiers acted. Click End Turn to collect resources.',h:'Enemies get stronger — attack soon!'};
+}
+
+function startGame(m){
+  APP.mode=m;srSec=0;if(srTick)clearInterval(srTick);
+  const b=m==='casual'?{gold:110,food:50}:{gold:55,food:22};
+  UID=0;
+  G={turn:1,gold:b.gold,food:b.food,units:[],bldgs:[{type:'castle',x:0,y:0}],enemies:[],cells:[],phase:'p',log:[]};
+  for(let y=0;y<10;y++)for(let x=0;x<10;x++){
+    let t='plain';
+    if((x+y)%7===0&&!(x<3&&y<3))t='forest';
+    if([`4,3`,`5,4`,`3,5`,`6,6`].includes(`${x},${y}`))t='mountain';
+    G.cells.push({x,y,t,b:null,uid:null,euid:null,owned:false});
+  }
+  C(0,0).b='castle';C(0,0).owned=true;C(0,0).t='plain';
+  const s=mkU('warrior',1,0);G.units.push(s);C(1,0).uid=s.id;C(1,0).owned=true;
+  const e1=mkEn(8,1,1),e2=mkEn(7,8,2);G.enemies=[e1,e2];
+  if(m==='speed'){srTick=setInterval(()=>{srSec++;rHUD();if(srSec>=480){clearInterval(srTick);showModal('The Dark Prevails','Time ran out. The forgotten kingdom fades to ash.',false);}},1000);}
+  addLog('The kingdom stirs. Follow the guide bar above.','h');
+  selC=null;actT=null;reach=[];atkr=[];
+  APP.page='game';render();
+}
+
+function mkEn(x,y,lvl){const e={x,y,lvl,hp:50+lvl*10,mhp:50+lvl*10,units:[]};C(x,y).b='ecastle';C(x,y).t='plain';return e;}
+function allEU(){return G.enemies.flatMap(e=>e.units);}
+function fmtT(s){return Math.floor(s/60)+':'+(s%60<10?'0':'')+s%60;}
+
+function renderGame(){
+  R.innerHTML=`<div id="s-game" style="display:flex;flex-direction:column;width:100%;min-height:680px">
+  <div class="hud" id="hud"></div>
+  <div class="guide" id="guide"></div>
+  <div class="game-body">
+  <div class="map-col"><div class="map-grid" id="mgrid"></div><div class="minimap"><div class="mm-lbl">Minimap</div><div class="mm-grid" id="mmgrid"></div></div></div>
+  <div class="sb" id="sidebar"></div>
+  </div>
+  </div>`;
+  rHUD();rGuide();rMap();rMini();rSB();
+}
+
+function rHUD(){
+  const h=document.getElementById('hud');if(!h)return;
+  const sr=APP.mode==='speed'?`<div class="sr-pill"><i class="ti ti-bolt" aria-hidden="true" style="font-size:11px"></i> ${fmtT(srSec)}/8:00${srBest?' best:'+fmtT(srBest):''}</div>`:'';
+  h.innerHTML=`<span class="hud-brand">Ashes</span>
+  <div class="hstat"><i class="ti ti-coin" aria-hidden="true"></i>${G.gold}<span class="lbl">gold</span></div>
+  <div class="hstat"><i class="ti ti-wheat" aria-hidden="true"></i>${G.food}<span class="lbl">food</span></div>
+  <div class="hstat"><i class="ti ti-shield" aria-hidden="true"></i>${G.units.length}<span class="lbl">soldiers</span></div>
+  <div class="hstat"><i class="ti ti-building" aria-hidden="true"></i>${G.bldgs.length}<span class="lbl">buildings</span></div>
+  ${sr}
+  <div class="turn-pill">${G.phase==='p'?'YOUR TURN':'ENEMY ACTS'} · T${G.turn}</div>`;
+}
+
+function rGuide(){
+  const gb=document.getElementById('guide');if(!gb)return;
+  const g=getGuide();
+  gb.innerHTML=`<div class="guide-badge"><i class="ti ${g.icon}" aria-hidden="true"></i>${g.t}</div>${g.h?`<span class="guide-hint">${g.h}</span>`:''}`;
+}
+
+function rMap(){
+  const mg=document.getElementById('mgrid');if(!mg)return;
+  let html='';
+  for(let y=0;y<10;y++)for(let x=0;x<10;x++){
+    const c=C(x,y);let cls='cell',em='',hp='';
+    if(reach.some(r=>r[0]===x&&r[1]===y))cls+=' reach';
+    if(atkr.some(a=>a[0]===x&&a[1]===y))cls+=' atkr';
+    if(selC&&selC[0]===x&&selC[1]===y)cls+=' sel';
+    if(c.t==='forest')em='🌲';if(c.t==='mountain')em='⛰️';
+    if(c.b==='castle')em='🏰';else if(c.b==='ecastle')em='💀';else if(c.b==='barracks')em='⚔️';else if(c.b==='farm')em='🌾';else if(c.b==='mine')em='⛏️';else if(c.b==='tower')em='🗼';
+    if(c.uid){const u=G.units.find(u=>u.id===c.uid);if(u){em=u.e+(u.moved?'·':'');hp=`<span class="chp">${u.hp}</span>`;}}
+    if(c.euid){const eu=allEU().find(u=>u.id===c.euid);if(eu){em=eu.e;hp=`<span class="ehp">${eu.hp}</span>`;}}
+    html+=`<div class="${cls}" data-x="${x}" data-y="${y}">${em}${hp}</div>`;
+  }
+  mg.innerHTML=html;
+  mg.querySelectorAll('.cell').forEach(el=>el.addEventListener('click',()=>clickCell(+el.dataset.x,+el.dataset.y)));
+}
+
+function rMini(){
+  const mm=document.getElementById('mmgrid');if(!mm)return;let html='';
+  for(let y=0;y<10;y++)for(let x=0;x<10;x++){
+    const c=C(x,y);let cls='mm-c';
+    if(c.b==='castle')cls='mm-c mm-castle';else if(c.b==='ecastle')cls='mm-c mm-ec';
+    else if(c.euid)cls='mm-c mm-eu';else if(c.uid)cls='mm-c mm-u';
+    else if(c.b)cls='mm-c mm-b';else if(c.owned)cls='mm-c mm-own';
+    else if(c.t==='forest')cls='mm-c mm-f';else if(c.t==='mountain')cls='mm-c mm-m';
+    html+=`<div class="${cls}"></div>`;
+  }
+  mm.innerHTML=html;
+}
+
+function canBuild(x,y){
+  const dirs=[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1]];
+  for(const[dx,dy]of dirs){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=10||ny>=10)continue;const c=C(nx,ny);if(c.owned||c.uid)return true;}
+  return G.units.some(u=>Math.abs(u.x-x)<=1&&Math.abs(u.y-y)<=1);
+}
+
+function compReach(u){
+  reach=[];atkr=[];
+  for(let y=0;y<10;y++)for(let x=0;x<10;x++){
+    const d=Math.abs(u.x-x)+Math.abs(u.y-y);const c=C(x,y);
+    if(d<=u.mov&&!c.uid&&!c.euid&&c.t!=='mountain'&&!c.b)reach.push([x,y]);
+    if(d<=u.rng&&(c.euid||c.b==='ecastle'||G.enemies.some(e=>e.x===x&&e.y===y)))atkr.push([x,y]);
+  }
+}
+
+function rSB(){
+  const sb=document.getElementById('sidebar');if(!sb)return;
+  let html='';
+  if(actT){
+    const u=G.units.find(u=>u.id===actT);
+    html+=`<div class="sblk"><div class="sblk-title">Active unit</div>
+    <div class="srow"><span class="k">${u?u.e+' '+u.n:'—'}</span><span class="v">${u?u.hp+'/'+u.mhp+'hp':''}</span></div>
+    <div class="srow"><span class="k">Atk / Range</span><span class="v">${u?u.atk+' / '+u.rng:'—'}</span></div>
+    <div style="font-size:10px;color:#4a6a30;margin-top:5px;line-height:1.6">🟢 Green = move there<br>🔴 Red = attack that cell</div>
+    <button class="sbtn" id="sb-cancel" style="margin-top:7px">✕ Cancel</button></div>`;
+  } else if(selC){
+    const[cx,cy]=selC;const c=C(cx,cy);
+    html+=`<div class="sblk"><div class="sblk-title">Cell (${cx},${cy})</div>`;
+    html+=`<div class="srow"><span class="k">Terrain</span><span class="v">${c.t}</span></div>`;
+    if(c.b&&c.b!=='ecastle'){html+=`<div class="srow"><span class="k">Building</span><span class="v">${BLDG[c.b]?.e||''} ${BLDG[c.b]?.n||c.b}</span></div>`;}
+    if(c.b==='ecastle'){const en=G.enemies.find(e=>e.x===cx&&e.y===cy);if(en)html+=`<div class="srow"><span class="k">Enemy fortress</span><span class="v sv-r">${en.hp}/${en.mhp}hp</span></div>`;}
+    if(c.uid){const u=G.units.find(u=>u.id===c.uid);if(u){html+=`<div class="srow"><span class="k">${u.e} ${u.n}</span><span class="v">${u.hp}/${u.mhp}hp</span></div><div class="srow"><span class="k">Atk/Rng/Spd</span><span class="v">${u.atk}/${u.rng}/${u.mov}</span></div>`;if(!u.moved&&G.phase==='p')html+=`<button class="sbtn primary" id="sb-mv">Move / Attack</button>`;else if(u.moved)html+=`<div style="font-size:10px;color:#3a2010;margin-top:4px">Already acted this turn.</div>`;}}
+    if(c.euid){const eu=allEU().find(u=>u.id===c.euid);if(eu)html+=`<div class="srow"><span class="k">Enemy ${eu.n}</span><span class="v sv-r">${eu.hp}hp</span></div>`;}
+    if(!c.b&&!c.uid&&!c.euid&&G.phase==='p'&&canBuild(cx,cy)&&c.t!=='mountain'){
+      html+=`<div class="sblk-title" style="margin-top:8px;display:block">Build here</div>`;
+      Object.entries(BLDG).forEach(([k,b])=>{if(k==='castle')return;const ok=G.gold>=(b.cost.gold||0);html+=`<button class="sbtn" ${ok?'':'disabled'} data-bld="${k}">${b.e} ${b.n} ${b.cost.gold||0}g</button>`;});
+    }
+    if(c.b==='barracks'&&G.phase==='p'){
+      html+=`<div class="sblk-title" style="margin-top:8px;display:block">Train soldiers</div>`;
+      Object.entries(UNITS).forEach(([k,u])=>{const ok=G.gold>=u.cost.gold&&G.food>=u.cost.food;html+=`<button class="sbtn" ${ok?'':'disabled'} data-trn="${k}">${u.e} ${u.n} ${u.cost.gold}g${u.cost.food}f</button>`;});
+    }
+    html+='</div>';
+  } else {
+    html+=`<div class="sblk"><div class="sblk-title">How to play</div><div style="font-size:10px;color:#6a4a20;line-height:1.8">1. Click soldier → Move/Attack<br>2. Click empty land → Build<br>3. Click Barracks → Train troops<br>4. End Turn to collect gold<br>5. Destroy both 💀 to win</div></div>`;
+  }
+  const el=G.enemies.map(e=>`<div class="srow"><span class="k">Fortress ${e.lvl}</span><span class="v sv-r">${e.hp}/${e.mhp}hp</span></div>`).join('');
+  html+=`<div class="sblk"><div class="sblk-title">Enemy fortresses</div>${el||'<div style="font-size:10px;color:#508030">All fallen!</div>'}</div>`;
+  html+=`<div class="sblk"><button class="sbtn primary" id="sb-et"><i class="ti ti-player-skip-forward" aria-hidden="true"></i> End Turn</button><button class="sbtn" id="sb-save" style="margin-top:4px"><i class="ti ti-device-floppy" aria-hidden="true"></i> Save Game</button><button class="sbtn ghost" id="sb-menu" style="margin-top:4px;background:transparent;border-color:#2a1808;color:#4a2e10"><i class="ti ti-home" aria-hidden="true"></i> Main Menu</button></div>`;
+  html+=`<div class="log-a">${G.log.map(l=>`<div class="ll ${l.t}">${l.m}</div>`).join('')}</div>`;
+  sb.innerHTML=html;
+  sb.querySelector('#sb-et')?.addEventListener('click',endTurn);
+  sb.querySelector('#sb-save')?.addEventListener('click',()=>{doSave();rSB();});
+  sb.querySelector('#sb-menu')?.addEventListener('click',()=>{if(srTick)clearInterval(srTick);APP.page='saves';render();});
+  sb.querySelector('#sb-mv')?.addEventListener('click',()=>{if(!selC)return;const c=C(selC[0],selC[1]);const u=G.units.find(u=>u.id===c.uid);if(!u||u.moved)return;actT=u.id;compReach(u);rMap();rGuide();rSB();});
+  sb.querySelector('#sb-cancel')?.addEventListener('click',()=>{actT=null;reach=[];atkr=[];rMap();rGuide();rSB();});
+  sb.querySelectorAll('[data-bld]').forEach(btn=>btn.addEventListener('click',()=>doBuild(btn.dataset.bld)));
+  sb.querySelectorAll('[data-trn]').forEach(btn=>btn.addEventListener('click',()=>doTrain(btn.dataset.trn)));
+}
+
+function clickCell(x,y){
+  if(G.phase!=='p')return;
+  if(actT){tryAction(actT,x,y);actT=null;reach=[];atkr=[];selC=[x,y];rHUD();rGuide();rMap();rMini();rSB();return;}
+  selC=[x,y];rGuide();rSB();rMap();
+}
+
+function rnd(a){return Math.max(1,a+Math.floor(Math.random()*4)-1);}
+
+function tryAction(uid,tx,ty){
+  const u=G.units.find(u=>u.id===uid);if(!u||u.moved)return;
+  const tc=C(tx,ty);const dist=Math.abs(u.x-tx)+Math.abs(u.y-ty);
+  const en=G.enemies.find(e=>e.x===tx&&e.y===ty);
+  if(en&&dist<=u.rng){const d=rnd(u.atk);en.hp-=d;addLog(`${u.n} hits fortress ${en.lvl} for ${d}!`,'g');u.moved=true;if(en.hp<=0)destEn(en);checkWin();return;}
+  if(tc.euid&&dist<=u.rng){const eu=allEU().find(u=>u.id===tc.euid);if(eu){const d=rnd(u.atk);eu.hp-=d;addLog(`${u.n} strikes ${eu.n} for ${d}!`,'g');u.moved=true;if(eu.hp<=0)remEU(eu,tx,ty);checkWin();return;}}
+  if(dist<=u.mov&&!tc.uid&&!tc.euid&&tc.t!=='mountain'&&!tc.b){C(u.x,u.y).uid=null;u.x=tx;u.y=ty;tc.uid=u.id;tc.owned=true;u.moved=true;addLog(`${u.n} moves to (${tx},${ty})`,'n');}
+  else addLog('Cannot reach.','b');
+}
+
+function doBuild(type){
+  if(!selC)return;const[bx,by]=selC;const b=BLDG[type];
+  if(G.gold<(b.cost.gold||0)){addLog('Not enough gold!','b');return;}
+  G.gold-=(b.cost.gold||0);C(bx,by).b=type;C(bx,by).owned=true;
+  G.bldgs.push({type,x:bx,y:by});addLog(`${b.n} built at (${bx},${by})`,'g');rHUD();rGuide();rMap();rMini();rSB();
+}
+
+function doTrain(type){
+  if(!selC)return;const[bx,by]=selC;const u=UNITS[type];
+  if(G.gold<u.cost.gold||G.food<u.cost.food){addLog('Not enough resources!','b');return;}
+  G.gold-=u.cost.gold;G.food-=u.cost.food;
+  const dirs=[[0,1],[1,0],[0,-1],[-1,0],[1,1],[-1,1],[1,-1],[-1,-1]];
+  for(const[dx,dy]of dirs){const nx=bx+dx,ny=by+dy;if(nx<0||ny<0||nx>=10||ny>=10)continue;const c=C(nx,ny);if(!c.uid&&!c.b&&!c.euid&&c.t!=='mountain'){const nu=mkU(type,nx,ny);G.units.push(nu);c.uid=nu.id;c.owned=true;addLog(`${u.n} trained and ready!`,'g');rHUD();rGuide();rMap();rMini();rSB();return;}}
+  addLog('No space near barracks.','b');rSB();
+}
+
+function destEn(en){
+  C(en.x,en.y).b=null;en.units.forEach(u=>remEU(u,u.x,u.y));
+  G.enemies=G.enemies.filter(e=>e!==en);const loot=50+en.lvl*25;G.gold+=loot;
+  addLog(`Fortress ${en.lvl} falls! +${loot} gold!`,'h');
+}
+
+function remEU(eu,x,y){C(x,y).euid=null;G.enemies.forEach(e=>{e.units=e.units.filter(u=>u.id!==eu.id);});}
+
+function endTurn(){
+  let g=0,f=0;const m=APP.mode==='casual'?1.5:1;
+  G.bldgs.forEach(b=>{const p=BLDG[b.type]?.prod;if(p){g+=p.gold||0;f+=p.food||0;}});
+  g=Math.round(g*m);f=Math.round(f*m);G.gold+=g;G.food+=f;
+  if(g||f)addLog(`+${g} gold, +${f} food gathered.`,'n');
+  G.units.forEach(u=>u.moved=false);G.phase='e';selC=null;actT=null;reach=[];atkr=[];
+  rHUD();rGuide();rMap();rMini();rSB();
+  setTimeout(doEnemyTurn,800);
+}
+
+function doEnemyTurn(){
+  G.enemies.forEach(en=>{
+    if(G.turn%2===0&&en.units.length<4){
+      const type=G.turn>6?'warrior':'archer';const dirs=[[0,1],[1,0],[0,-1],[-1,0]];
+      for(const[dx,dy]of dirs){const nx=en.x+dx,ny=en.y+dy;if(nx<0||ny<0||nx>=10||ny>=10)continue;const c=C(nx,ny);if(!c.uid&&!c.euid&&!c.b&&c.t!=='mountain'){const nu=mkU(type,nx,ny,true);en.units.push(nu);c.euid=nu.id;addLog(`Enemy spawns a ${nu.n}!`,'b');break;}}
+    }
+    en.units.forEach(eu=>{
+      let tgt=null,minD=99;
+      G.units.forEach(pu=>{const d=Math.abs(eu.x-pu.x)+Math.abs(eu.y-pu.y);if(d<minD){minD=d;tgt=pu;}});
+      const cd=Math.abs(eu.x)+Math.abs(eu.y);if(cd<minD){minD=cd;tgt={x:0,y:0,castle:true};}
+      if(!tgt)return;
+      if(minD<=eu.rng){
+        if(tgt.castle){G.gold=Math.max(0,G.gold-4);addLog(`Enemy raids your castle! -4 gold`,'b');}
+        else{const d=Math.max(1,eu.atk+Math.floor(Math.random()*3)-1);tgt.hp-=d;addLog(`Enemy ${eu.n} wounds ${tgt.n} for ${d}!`,'b');if(tgt.hp<=0){C(tgt.x,tgt.y).uid=null;G.units=G.units.filter(u=>u.id!==tgt.id);addLog(`Your ${tgt.n} has fallen!`,'b');}}
+      } else {
+        const dx=tgt.x-eu.x,dy=tgt.y-eu.y;let nx=eu.x,ny=eu.y;
+        if(Math.abs(dx)>=Math.abs(dy))nx+=Math.sign(dx);else ny+=Math.sign(dy);
+        if(nx>=0&&nx<10&&ny>=0&&ny<10){const nc=C(nx,ny);if(!nc.uid&&!nc.euid&&nc.t!=='mountain'&&!nc.b){C(eu.x,eu.y).euid=null;eu.x=nx;eu.y=ny;nc.euid=eu.id;}}
+      }
+    });
+  });
+  G.turn++;G.phase='p';
+  if(G.units.length===0){showModal('The Kingdom Falls','Your last warriors have perished. The forgotten kingdom fades to dust.',false);return;}
+  rHUD();rGuide();rMap();rMini();rSB();
+}
+
+function checkWin(){
+  if(G.enemies.length===0){
+    if(APP.mode==='speed'){clearInterval(srTick);if(!srBest||srSec<srBest)srBest=srSec;showModal('Victory!',`Realm reclaimed in ${fmtT(srSec)}!${srBest===srSec?' New record!':''}`,true);}
+    else showModal('The Kingdom Rises','All enemy fortresses lie in ruin. The forgotten kingdom breathes once more.',true);
+  }
+}
+
+function showModal(title,msg,canPlay){
+  const old=document.getElementById('s-modal');if(old)old.remove();
+  const m=document.createElement('div');m.id='s-modal';
+  m.innerHTML=`<div class="modal-bg"><div class="modal-box"><h2>${title}</h2><p>${msg}</p><div class="modal-btns">${canPlay?'<button class="mbtn" id="mb-r">Play again</button>':''}<button class="mbtn" id="mb-m">Main menu</button></div></div></div>`;
+  R.appendChild(m);
+  m.querySelector('#mb-r')?.addEventListener('click',()=>{m.remove();startGame(APP.mode);});
+  m.querySelector('#mb-m')?.addEventListener('click',()=>{m.remove();if(srTick)clearInterval(srTick);APP.page='saves';render();});
+}
+
+render();
+</script>
